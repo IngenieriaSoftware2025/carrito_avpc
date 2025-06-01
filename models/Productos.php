@@ -32,6 +32,39 @@ class Productos extends ActiveRecord {
     
     
 
+// Obtener productos con información de categoría
+    public static function obtenerConCategoria() {
+        $sql = "SELECT p.*, c.categoria_nombre 
+                FROM productos p 
+                INNER JOIN categorias c ON p.producto_categoria_id = c.categoria_id 
+                WHERE p.producto_situacion = 1 
+                ORDER BY c.categoria_nombre, p.producto_nombre";
+        return self::fetchArray($sql);
+    }
+
+    // Obtener productos disponibles (con stock)
+    public static function obtenerDisponibles() {
+        $sql = "SELECT p.*, c.categoria_nombre 
+                FROM productos p 
+                INNER JOIN categorias c ON p.producto_categoria_id = c.categoria_id 
+                WHERE p.producto_situacion = 1 AND p.producto_stock > 0
+                ORDER BY c.categoria_nombre, p.producto_nombre";
+        return self::fetchArray($sql);
+    }
+
+    // Reducir stock después de una venta
+    public static function reducirStock($id, $cantidad) {
+        $sql = "UPDATE productos 
+                SET producto_stock = producto_stock - $cantidad 
+                WHERE producto_id = $id AND producto_stock >= $cantidad";
+        return self::SQL($sql);
+    }
+
+    // Eliminar producto (cambiar situación)
+    public static function eliminarProducto($id) {
+        $sql = "UPDATE productos SET producto_situacion = 0 WHERE producto_id = $id";
+        return self::SQL($sql);
+    }
 
 
 

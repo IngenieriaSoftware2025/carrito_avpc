@@ -4,16 +4,16 @@ import { validarFormulario } from '../funciones';
 import DataTable from "datatables.net-bs5";
 import { lenguaje } from "../lenguaje";
 
-const FormClientes = document.getElementById('FormClientes');
+const FormProductos = document.getElementById('FormProductos');
 const BtnGuardar = document.getElementById('BtnGuardar');
 const BtnModificar = document.getElementById('BtnModificar');
 const BtnLimpiar = document.getElementById('BtnLimpiar');
 
-const GuardarCliente = async (event) => {
+const GuardarProducto = async (event) => {
     event.preventDefault();
     BtnGuardar.disabled = true;
 
-    if (!validarFormulario(FormClientes, ['cliente_id'])) {
+    if (!validarFormulario(FormProductos, ['producto_id'])) {
         Swal.fire({
             position: "center",
             icon: "info",
@@ -25,8 +25,8 @@ const GuardarCliente = async (event) => {
         return;
     }
 
-    const body = new FormData(FormClientes);
-    const url = '/carrito_avpc/clientes/guardarAPI';
+    const body = new FormData(FormProductos);
+    const url = '/carrito_avpc/productos/guardarAPI';
     const config = {
         method: 'POST',
         body
@@ -49,7 +49,7 @@ const GuardarCliente = async (event) => {
             });
 
             limpiarTodo();
-            BuscarClientes();
+            BuscarProductos();
 
         } else {
             await Swal.fire({
@@ -61,26 +61,20 @@ const GuardarCliente = async (event) => {
             });
         }
     } catch (error) {
-        console.error('Error en GuardarCliente:', error);
+        console.error('Error en GuardarProducto:', error);
         Swal.fire({
             position: "center",
             icon: "error",
             title: "Error",
-            text: "Ocurrió un error inesperado",
+            text: "Ocurrió un error",
             showConfirmButton: true,
         });
     }
     BtnGuardar.disabled = false;
 }
 
-
-
-
-
-
-
-const BuscarClientes = async () => {
-    const url = '/carrito_avpc/clientes/buscarAPI';
+const BuscarProductos = async () => {
+    const url = '/carrito_avpc/productos/buscarAPI';
     const config = {
         method: 'GET'
     }
@@ -107,7 +101,7 @@ const BuscarClientes = async () => {
     }
 }
 
-const datatable = new DataTable('#TableClientes', {
+const datatable = new DataTable('#TableProductos', {
     dom: `
         <"row mt-3 justify-content-between" 
             <"col" l> 
@@ -122,48 +116,116 @@ const datatable = new DataTable('#TableClientes', {
     `,
     language: lenguaje,
     data: [],
-    order: [[1, 'asc']],
+    order: [[3, 'asc'], [1, 'asc']],
     columns: [
-        { title: 'No.', data: 'cliente_id', render: (data, type, row, meta) => meta.row + 1 },
-        { title: 'Nombre', data: 'cliente_nombre' },
-        { title: 'NIT', data: 'cliente_nit' },
-        { title: 'Dirección', data: 'cliente_direccion' },
-        { title: 'Teléfono', data: 'cliente_telefono' },
+        { title: 'No.', data: 'producto_id', render: (data, type, row, meta) => meta.row + 1 },
+        { title: 'Producto', data: 'producto_nombre' },
+        { 
+            title: 'Precio', 
+            data: 'producto_precio',
+            render: (data) => `Q${parseFloat(data).toFixed(2)}`
+        },
+        { title: 'Stock', data: 'producto_stock' },
+        {
+            title: 'Categoría', 
+            data: 'categoria_nombre', 
+            render: (data) => {
+                let color = 'bg-secondary';
+                if (data === 'Alimentos') color = 'bg-success';
+                if (data === 'Limpieza') color = 'bg-info';
+                if (data === 'Hogar') color = 'bg-warning';
+                if (data === 'Tecnología') color = 'bg-primary';
+                if (data === 'Ropa') color = 'bg-dark';
+                return `<span class="badge ${color} text-white">${data}</span>`;
+            }
+        },
+        {
+            title: 'Estado Stock',
+            data: 'producto_stock',
+            render: (data) => {
+                if (data == 0) {
+                    return '<span class="badge bg-danger">SIN STOCK</span>';
+                } else if (data <= 5) {
+                    return '<span class="badge bg-warning">STOCK BAJO</span>';
+                } else {
+                    return '<span class="badge bg-success">DISPONIBLE</span>';
+                }
+            }
+        },
         {
             title: 'Acciones',
-            data: 'cliente_id',
+            data: 'producto_id',
             searchable: false,
             orderable: false,
             width: '20%',
             render: (data, type, row, meta) => {
-                return `
+                let botones = `
                     <div class='d-flex justify-content-center'>
                         <button class='btn btn-warning btn-sm modificar mx-1' 
                             data-id="${data}" 
-                            data-nombre="${row.cliente_nombre}"  
-                            data-nit="${row.cliente_nit}"  
-                            data-direccion="${row.cliente_direccion}"  
-                            data-telefono="${row.cliente_telefono}">
+                            data-nombre="${row.producto_nombre}"  
+                            data-precio="${row.producto_precio}"  
+                            data-stock="${row.producto_stock}"  
+                            data-categoria="${row.producto_categoria_id}">
                             <i class='bi bi-pencil-square'></i>Modificar
-                        </button>
+                        </button>`;
+
+                // Solo mostrar eliminar si no tiene stock
+                if (row.producto_stock == 0) {
+                    botones += `
                         <button class='btn btn-danger btn-sm eliminar mx-1' 
                             data-id="${data}">
                             <i class="bi bi-trash3"></i> Eliminar
-                        </button>
-                    </div>`;
+                        </button>`;
+                } else {
+                    botones += `
+                        <button class='btn btn-secondary btn-sm' disabled title="No se puede eliminar con stock">
+                            <i class="bi bi-trash3"></i> Eliminar
+                        </button>`;
+                }
+
+                botones += `</div>`;
+                return botones;
             }
         }
     ],
 });
 
+const CargarCategorias = async () => {
+    const url = '/carrito_avpc/productos/categoriasAPI';
+    const config = {
+        method: 'GET'
+    }
+
+    try {
+        const respuesta = await fetch(url, config);
+        const datos = await respuesta.json();
+        const { codigo, data } = datos
+
+        if (codigo == 1) {
+            const select = document.getElementById('producto_categoria_id');
+            select.innerHTML = '<option value="">Seleccione categoría</option>';
+
+            data.forEach(categoria => {
+                const option = document.createElement('option');
+                option.value = categoria.categoria_id;
+                option.textContent = categoria.categoria_nombre;
+                select.appendChild(option);
+            });
+        }
+    } catch (error) {
+        console.error('Error en CargarCategorias:', error);
+    }
+}
+
 const llenarFormulario = (event) => {
     const datos = event.currentTarget.dataset
 
-    document.getElementById('cliente_id').value = datos.id
-    document.getElementById('cliente_nombre').value = datos.nombre
-    document.getElementById('cliente_nit').value = datos.nit
-    document.getElementById('cliente_direccion').value = datos.direccion
-    document.getElementById('cliente_telefono').value = datos.telefono
+    document.getElementById('producto_id').value = datos.id
+    document.getElementById('producto_nombre').value = datos.nombre
+    document.getElementById('producto_precio').value = datos.precio
+    document.getElementById('producto_stock').value = datos.stock
+    document.getElementById('producto_categoria_id').value = datos.categoria
 
     BtnGuardar.classList.add('d-none');
     BtnModificar.classList.remove('d-none');
@@ -175,20 +237,16 @@ const llenarFormulario = (event) => {
 }
 
 const limpiarTodo = () => {
-    FormClientes.reset();
+    FormProductos.reset();
     BtnGuardar.classList.remove('d-none');
     BtnModificar.classList.add('d-none');
 }
 
-
-
-
-
-const ModificarCliente = async (event) => {
+const ModificarProducto = async (event) => {
     event.preventDefault();
     BtnModificar.disabled = true;
 
-    if (!validarFormulario(FormClientes, [''])) {
+    if (!validarFormulario(FormProductos, [''])) {
         Swal.fire({
             position: "center",
             icon: "info",
@@ -200,8 +258,8 @@ const ModificarCliente = async (event) => {
         return;
     }
 
-    const body = new FormData(FormClientes);
-    const url = '/carrito_avpc/clientes/modificarAPI';
+    const body = new FormData(FormProductos);
+    const url = '/carrito_avpc/productos/modificarAPI';
     const config = {
         method: 'POST',
         body
@@ -222,7 +280,7 @@ const ModificarCliente = async (event) => {
             });
 
             limpiarTodo();
-            BuscarClientes();
+            BuscarProductos();
         } else {
             await Swal.fire({
                 position: "center",
@@ -233,25 +291,18 @@ const ModificarCliente = async (event) => {
             });
         }
     } catch (error) {
-        console.error('Error en ModificarCliente:', error);
+        console.error('Error en ModificarProducto:', error);
     }
     BtnModificar.disabled = false;
 }
 
-
-
-
-
-
-
-
-const EliminarCliente = async (e) => {
-    const idCliente = e.currentTarget.dataset.id
+const EliminarProducto = async (e) => {
+    const idProducto = e.currentTarget.dataset.id
 
     const AlertaConfirmarEliminar = await Swal.fire({
         position: "center",
         icon: "warning",
-        title: "¿Desea eliminar este cliente?",
+        title: "¿Desea eliminar este producto?",
         text: 'Esta acción no se puede deshacer',
         showConfirmButton: true,
         confirmButtonText: 'Sí, Eliminar',
@@ -261,7 +312,7 @@ const EliminarCliente = async (e) => {
     });
 
     if (AlertaConfirmarEliminar.isConfirmed) {
-        const url = `/carrito_avpc/clientes/eliminar?id=${idCliente}`;
+        const url = `/carrito_avpc/productos/eliminar?id=${idProducto}`;
         const config = {
             method: 'GET'
         }
@@ -280,7 +331,7 @@ const EliminarCliente = async (e) => {
                     showConfirmButton: true,
                 });
 
-                BuscarClientes();
+                BuscarProductos();
             } else {
                 await Swal.fire({
                     position: "center",
@@ -291,15 +342,15 @@ const EliminarCliente = async (e) => {
                 });
             }
         } catch (error) {
-            console.error('Error en Eliminar Cliente:', error);
+            console.error('Error en EliminarProducto:', error);
         }
     }
 }
 
-
-BuscarClientes();
-datatable.on('click', '.eliminar', EliminarCliente);
+CargarCategorias();
+BuscarProductos();
+datatable.on('click', '.eliminar', EliminarProducto);
 datatable.on('click', '.modificar', llenarFormulario);
-FormClientes.addEventListener('submit', GuardarCliente);
+FormProductos.addEventListener('submit', GuardarProducto);
 BtnLimpiar.addEventListener('click', limpiarTodo);
-BtnModificar.addEventListener('click', ModificarCliente);
+BtnModificar.addEventListener('click', ModificarProducto);
