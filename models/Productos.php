@@ -28,6 +28,12 @@ class Productos extends ActiveRecord {
         $this->producto_stock = $args['producto_stock'] ?? 0;
         $this->producto_categoria_id = $args['producto_categoria_id'] ?? 1;
         $this->producto_situacion = $args['producto_situacion'] ?? 1;
-    }    
+    }   
+    
+    
+
+
+
+
 
 }

@@ -29,4 +29,23 @@ class FacturaDetalle extends ActiveRecord {
         $this->detalle_precio_unitario = $args['detalle_precio_unitario'] ?? 0.00;
         $this->detalle_subtotal = $args['detalle_subtotal'] ?? 0.00;
     }
+
+
+
+
+
+     public static function obtenerPorFactura($factura_id) {
+        $sql = "SELECT fd.*, p.producto_nombre 
+                FROM factura_detalle fd 
+                INNER JOIN productos p ON fd.detalle_producto_id = p.producto_id 
+                WHERE fd.detalle_factura_id = $factura_id 
+                ORDER BY fd.detalle_id";
+        return self::fetchArray($sql);
+    }
+
+    // Eliminar todos los detalles de una factura
+    public static function eliminarPorFactura($factura_id) {
+        $sql = "DELETE FROM factura_detalle WHERE detalle_factura_id = $factura_id";
+        return self::SQL($sql);
+    }
 }
