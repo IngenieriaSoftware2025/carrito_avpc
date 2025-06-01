@@ -1,6 +1,6 @@
 {
-    "name": "mindef/demo",
-    "description": "Proyecto MVC demo",
+    "name": "carrito_avpc/carrito_avpc",
+    "description": "Proyecto Carrito de Compras",
     "type": "project",
     "config": {
         "platform-check": false
