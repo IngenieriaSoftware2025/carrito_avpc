@@ -34,11 +34,7 @@
                             <i class="bi bi-cart3 me-2"></i>clientes
                         </a>
                     </li>
-                    <li class="nav-item">
-                        <a class="nav-link" href="/carrito_avpc/productos">
-                            <i class="bi bi-cart3 me-2"></i>productos
-                        </a>
-                    </li>
+                
                      <li class="nav-item">
                         <a class="nav-link" href="/carrito_avpc/ventas">
                             <i class="bi bi-cart3 me-2"></i>Ventas
@@ -46,7 +42,7 @@
                     </li>
                      <li class="nav-item">
                         <a class="nav-link" href="/carrito_avpc/productos_ventas">
-                            <i class="bi bi-cart3 me-2"></i>detalle venta
+                            <i class="bi bi-cart3 me-2"></i>Ventas
                         </a>
                     </li>
                 </ul>
