@@ -18,7 +18,7 @@ const GuardarCliente = async (event) => {
             position: "center",
             icon: "info",
             title: "FORMULARIO INCOMPLETO",
-            text: "Debe de validar todos los campos",
+            text: "Debe completar todos los campos obligatorios",
             showConfirmButton: true,
         });
         BtnGuardar.disabled = false;
@@ -26,7 +26,7 @@ const GuardarCliente = async (event) => {
     }
 
     const body = new FormData(FormClientes);
-    const url = '/carrito_avpc/clientes/guardarAPI';
+    const url = '/app01_avpc/clientes/guardarAPI';
     const config = {
         method: 'POST',
         body
@@ -35,9 +35,7 @@ const GuardarCliente = async (event) => {
     try {
         const respuesta = await fetch(url, config);
         const datos = await respuesta.json();
-        const { codigo, mensaje } = datos
-
-        console.log('Respuesta del servidor:', datos);
+        const { codigo, mensaje } = datos;
 
         if (codigo == 1) {
             await Swal.fire({
@@ -50,7 +48,6 @@ const GuardarCliente = async (event) => {
 
             limpiarTodo();
             BuscarClientes();
-
         } else {
             await Swal.fire({
                 position: "center",
@@ -73,14 +70,8 @@ const GuardarCliente = async (event) => {
     BtnGuardar.disabled = false;
 }
 
-
-
-
-
-
-
 const BuscarClientes = async () => {
-    const url = '/carrito_avpc/clientes/buscarAPI';
+    const url = '/app01_avpc/clientes/buscarAPI';
     const config = {
         method: 'GET'
     }
@@ -88,7 +79,7 @@ const BuscarClientes = async () => {
     try {
         const respuesta = await fetch(url, config);
         const datos = await respuesta.json();
-        const { codigo, mensaje, data } = datos
+        const { codigo, data } = datos;
 
         if (codigo == 1) {
             datatable.clear().draw();
@@ -103,67 +94,58 @@ const BuscarClientes = async () => {
             });
         }
     } catch (error) {
-        console.log(error)
+        console.log(error);
     }
 }
 
 const datatable = new DataTable('#TableClientes', {
-    dom: `
-        <"row mt-3 justify-content-between" 
-            <"col" l> 
-            <"col" B> 
-            <"col-3" f>
-        >
-        t
-        <"row mt-3 justify-content-between" 
-            <"col-md-3 d-flex align-items-center" i> 
-            <"col-md-8 d-flex justify-content-end" p>
-        >
-    `,
     language: lenguaje,
     data: [],
-    order: [[1, 'asc']],
     columns: [
         { title: 'No.', data: 'cliente_id', render: (data, type, row, meta) => meta.row + 1 },
         { title: 'Nombre', data: 'cliente_nombre' },
+        { title: 'Apellido', data: 'cliente_apellido' },
         { title: 'NIT', data: 'cliente_nit' },
-        { title: 'Dirección', data: 'cliente_direccion' },
+        { title: 'Email', data: 'cliente_email' },
         { title: 'Teléfono', data: 'cliente_telefono' },
         {
             title: 'Acciones',
             data: 'cliente_id',
             searchable: false,
             orderable: false,
-            width: '20%',
-            render: (data, type, row, meta) => {
+            render: (data, type, row) => {
                 return `
-                    <div class='d-flex justify-content-center'>
-                        <button class='btn btn-warning btn-sm modificar mx-1' 
+                    <div class='d-flex justify-content-center gap-1'>
+                        <button class='btn btn-warning btn-sm modificar' 
                             data-id="${data}" 
                             data-nombre="${row.cliente_nombre}"  
+                            data-apellido="${row.cliente_apellido}"  
                             data-nit="${row.cliente_nit}"  
-                            data-direccion="${row.cliente_direccion}"  
-                            data-telefono="${row.cliente_telefono}">
-                            <i class='bi bi-pencil-square'></i>Modificar
+                            data-email="${row.cliente_email}"
+                            data-telefono="${row.cliente_telefono}"
+                            data-direccion="${row.cliente_direccion}">
+                            <i class='bi bi-pencil-square'></i> Modificar
                         </button>
-                        <button class='btn btn-danger btn-sm eliminar mx-1' 
+                        <button class='btn btn-danger btn-sm eliminar' 
                             data-id="${data}">
                             <i class="bi bi-trash3"></i> Eliminar
                         </button>
                     </div>`;
             }
         }
-    ],
+    ]
 });
 
 const llenarFormulario = (event) => {
-    const datos = event.currentTarget.dataset
+    const datos = event.currentTarget.dataset;
 
-    document.getElementById('cliente_id').value = datos.id
-    document.getElementById('cliente_nombre').value = datos.nombre
-    document.getElementById('cliente_nit').value = datos.nit
-    document.getElementById('cliente_direccion').value = datos.direccion
-    document.getElementById('cliente_telefono').value = datos.telefono
+    document.getElementById('cliente_id').value = datos.id;
+    document.getElementById('cliente_nombre').value = datos.nombre;
+    document.getElementById('cliente_apellido').value = datos.apellido;
+    document.getElementById('cliente_nit').value = datos.nit;
+    document.getElementById('cliente_email').value = datos.email;
+    document.getElementById('cliente_telefono').value = datos.telefono;
+    document.getElementById('cliente_direccion').value = datos.direccion;
 
     BtnGuardar.classList.add('d-none');
     BtnModificar.classList.remove('d-none');
@@ -171,7 +153,7 @@ const llenarFormulario = (event) => {
     window.scrollTo({
         top: 0,
         behavior: 'smooth'
-    })
+    });
 }
 
 const limpiarTodo = () => {
@@ -179,10 +161,6 @@ const limpiarTodo = () => {
     BtnGuardar.classList.remove('d-none');
     BtnModificar.classList.add('d-none');
 }
-
-
-
-
 
 const ModificarCliente = async (event) => {
     event.preventDefault();
@@ -193,7 +171,7 @@ const ModificarCliente = async (event) => {
             position: "center",
             icon: "info",
             title: "FORMULARIO INCOMPLETO",
-            text: "Debe de validar todos los campos",
+            text: "Debe completar todos los campos obligatorios",
             showConfirmButton: true,
         });
         BtnModificar.disabled = false;
@@ -201,7 +179,7 @@ const ModificarCliente = async (event) => {
     }
 
     const body = new FormData(FormClientes);
-    const url = '/carrito_avpc/clientes/modificarAPI';
+    const url = '/app01_avpc/clientes/modificarAPI';
     const config = {
         method: 'POST',
         body
@@ -210,7 +188,7 @@ const ModificarCliente = async (event) => {
     try {
         const respuesta = await fetch(url, config);
         const datos = await respuesta.json();
-        const { codigo, mensaje } = datos
+        const { codigo, mensaje } = datos;
 
         if (codigo == 1) {
             await Swal.fire({
@@ -238,15 +216,8 @@ const ModificarCliente = async (event) => {
     BtnModificar.disabled = false;
 }
 
-
-
-
-
-
-
-
-const EliminarCliente = async (e) => {
-    const idCliente = e.currentTarget.dataset.id
+const EliminarCliente = async (event) => {
+    const idCliente = event.currentTarget.dataset.id;
 
     const AlertaConfirmarEliminar = await Swal.fire({
         position: "center",
@@ -261,7 +232,7 @@ const EliminarCliente = async (e) => {
     });
 
     if (AlertaConfirmarEliminar.isConfirmed) {
-        const url = `/carrito_avpc/clientes/eliminar?id=${idCliente}`;
+        const url = `/app01_avpc/clientes/eliminar?id=${idCliente}`;
         const config = {
             method: 'GET'
         }
@@ -291,15 +262,17 @@ const EliminarCliente = async (e) => {
                 });
             }
         } catch (error) {
-            console.error('Error en Eliminar Cliente:', error);
+            console.error('Error en EliminarCliente:', error);
         }
     }
 }
 
-
+// Inicializar
 BuscarClientes();
-datatable.on('click', '.eliminar', EliminarCliente);
-datatable.on('click', '.modificar', llenarFormulario);
+
+// Event Listeners
 FormClientes.addEventListener('submit', GuardarCliente);
 BtnLimpiar.addEventListener('click', limpiarTodo);
 BtnModificar.addEventListener('click', ModificarCliente);
+datatable.on('click', '.eliminar', EliminarCliente);
+datatable.on('click', '.modificar', llenarFormulario);

@@ -8,6 +8,7 @@ const FormProductos = document.getElementById('FormProductos');
 const BtnGuardar = document.getElementById('BtnGuardar');
 const BtnModificar = document.getElementById('BtnModificar');
 const BtnLimpiar = document.getElementById('BtnLimpiar');
+const BtnConfirmarStock = document.getElementById('BtnConfirmarStock');
 
 const GuardarProducto = async (event) => {
     event.preventDefault();
@@ -18,7 +19,7 @@ const GuardarProducto = async (event) => {
             position: "center",
             icon: "info",
             title: "FORMULARIO INCOMPLETO",
-            text: "Debe de validar todos los campos",
+            text: "Debe completar todos los campos obligatorios",
             showConfirmButton: true,
         });
         BtnGuardar.disabled = false;
@@ -26,7 +27,7 @@ const GuardarProducto = async (event) => {
     }
 
     const body = new FormData(FormProductos);
-    const url = '/carrito_avpc/productos/guardarAPI';
+    const url = '/app01_avpc/productos/guardarAPI';
     const config = {
         method: 'POST',
         body
@@ -35,9 +36,7 @@ const GuardarProducto = async (event) => {
     try {
         const respuesta = await fetch(url, config);
         const datos = await respuesta.json();
-        const { codigo, mensaje } = datos
-
-        console.log('Respuesta del servidor:', datos);
+        const { codigo, mensaje } = datos;
 
         if (codigo == 1) {
             await Swal.fire({
@@ -50,7 +49,6 @@ const GuardarProducto = async (event) => {
 
             limpiarTodo();
             BuscarProductos();
-
         } else {
             await Swal.fire({
                 position: "center",
@@ -66,7 +64,7 @@ const GuardarProducto = async (event) => {
             position: "center",
             icon: "error",
             title: "Error",
-            text: "Ocurrió un error",
+            text: "Ocurrió un error inesperado",
             showConfirmButton: true,
         });
     }
@@ -74,7 +72,7 @@ const GuardarProducto = async (event) => {
 }
 
 const BuscarProductos = async () => {
-    const url = '/carrito_avpc/productos/buscarAPI';
+    const url = '/app01_avpc/productos/buscarAPI';
     const config = {
         method: 'GET'
     }
@@ -82,7 +80,7 @@ const BuscarProductos = async () => {
     try {
         const respuesta = await fetch(url, config);
         const datos = await respuesta.json();
-        const { codigo, mensaje, data } = datos
+        const { codigo, data } = datos;
 
         if (codigo == 1) {
             datatable.clear().draw();
@@ -97,26 +95,13 @@ const BuscarProductos = async () => {
             });
         }
     } catch (error) {
-        console.log(error)
+        console.log(error);
     }
 }
 
 const datatable = new DataTable('#TableProductos', {
-    dom: `
-        <"row mt-3 justify-content-between" 
-            <"col" l> 
-            <"col" B> 
-            <"col-3" f>
-        >
-        t
-        <"row mt-3 justify-content-between" 
-            <"col-md-3 d-flex align-items-center" i> 
-            <"col-md-8 d-flex justify-content-end" p>
-        >
-    `,
     language: lenguaje,
     data: [],
-    order: [[3, 'asc'], [1, 'asc']],
     columns: [
         { title: 'No.', data: 'producto_id', render: (data, type, row, meta) => meta.row + 1 },
         { title: 'Producto', data: 'producto_nombre' },
@@ -125,107 +110,58 @@ const datatable = new DataTable('#TableProductos', {
             data: 'producto_precio',
             render: (data) => `Q${parseFloat(data).toFixed(2)}`
         },
-        { title: 'Stock', data: 'producto_stock' },
-        {
-            title: 'Categoría', 
-            data: 'categoria_nombre', 
+        { 
+            title: 'Stock', 
+            data: 'producto_stock',
             render: (data) => {
-                let color = 'bg-secondary';
-                if (data === 'Alimentos') color = 'bg-success';
-                if (data === 'Limpieza') color = 'bg-info';
-                if (data === 'Hogar') color = 'bg-warning';
-                if (data === 'Tecnología') color = 'bg-primary';
-                if (data === 'Ropa') color = 'bg-dark';
+                let color = 'bg-success';
+                if (data <= 5) color = 'bg-danger';
+                else if (data <= 10) color = 'bg-warning';
+                
                 return `<span class="badge ${color} text-white">${data}</span>`;
             }
         },
-        {
-            title: 'Estado Stock',
-            data: 'producto_stock',
-            render: (data) => {
-                if (data == 0) {
-                    return '<span class="badge bg-danger">SIN STOCK</span>';
-                } else if (data <= 5) {
-                    return '<span class="badge bg-warning">STOCK BAJO</span>';
-                } else {
-                    return '<span class="badge bg-success">DISPONIBLE</span>';
-                }
-            }
-        },
+        { title: 'Descripción', data: 'producto_descripcion' },
         {
             title: 'Acciones',
             data: 'producto_id',
             searchable: false,
             orderable: false,
-            width: '20%',
-            render: (data, type, row, meta) => {
-                let botones = `
-                    <div class='d-flex justify-content-center'>
-                        <button class='btn btn-warning btn-sm modificar mx-1' 
+            render: (data, type, row) => {
+                return `
+                    <div class='d-flex justify-content-center gap-1 flex-wrap'>
+                        <button class='btn btn-warning btn-sm modificar mb-1' 
                             data-id="${data}" 
                             data-nombre="${row.producto_nombre}"  
                             data-precio="${row.producto_precio}"  
                             data-stock="${row.producto_stock}"  
-                            data-categoria="${row.producto_categoria_id}">
-                            <i class='bi bi-pencil-square'></i>Modificar
-                        </button>`;
-
-                // Solo mostrar eliminar si no tiene stock
-                if (row.producto_stock == 0) {
-                    botones += `
-                        <button class='btn btn-danger btn-sm eliminar mx-1' 
+                            data-descripcion="${row.producto_descripcion}">
+                            <i class='bi bi-pencil-square'></i> Modificar
+                        </button>
+                        <button class='btn btn-info btn-sm agregar-stock mb-1' 
+                            data-id="${data}"
+                            data-nombre="${row.producto_nombre}"
+                            data-stock="${row.producto_stock}">
+                            <i class="bi bi-plus-circle"></i> Stock
+                        </button>
+                        <button class='btn btn-danger btn-sm eliminar mb-1' 
                             data-id="${data}">
                             <i class="bi bi-trash3"></i> Eliminar
-                        </button>`;
-                } else {
-                    botones += `
-                        <button class='btn btn-secondary btn-sm' disabled title="No se puede eliminar con stock">
-                            <i class="bi bi-trash3"></i> Eliminar
-                        </button>`;
-                }
-
-                botones += `</div>`;
-                return botones;
+                        </button>
+                    </div>`;
             }
         }
-    ],
+    ]
 });
 
-const CargarCategorias = async () => {
-    const url = '/carrito_avpc/productos/categoriasAPI';
-    const config = {
-        method: 'GET'
-    }
-
-    try {
-        const respuesta = await fetch(url, config);
-        const datos = await respuesta.json();
-        const { codigo, data } = datos
-
-        if (codigo == 1) {
-            const select = document.getElementById('producto_categoria_id');
-            select.innerHTML = '<option value="">Seleccione categoría</option>';
-
-            data.forEach(categoria => {
-                const option = document.createElement('option');
-                option.value = categoria.categoria_id;
-                option.textContent = categoria.categoria_nombre;
-                select.appendChild(option);
-            });
-        }
-    } catch (error) {
-        console.error('Error en CargarCategorias:', error);
-    }
-}
-
 const llenarFormulario = (event) => {
-    const datos = event.currentTarget.dataset
+    const datos = event.currentTarget.dataset;
 
-    document.getElementById('producto_id').value = datos.id
-    document.getElementById('producto_nombre').value = datos.nombre
-    document.getElementById('producto_precio').value = datos.precio
-    document.getElementById('producto_stock').value = datos.stock
-    document.getElementById('producto_categoria_id').value = datos.categoria
+    document.getElementById('producto_id').value = datos.id;
+    document.getElementById('producto_nombre').value = datos.nombre;
+    document.getElementById('producto_precio').value = datos.precio;
+    document.getElementById('producto_stock').value = datos.stock;
+    document.getElementById('producto_descripcion').value = datos.descripcion;
 
     BtnGuardar.classList.add('d-none');
     BtnModificar.classList.remove('d-none');
@@ -233,7 +169,7 @@ const llenarFormulario = (event) => {
     window.scrollTo({
         top: 0,
         behavior: 'smooth'
-    })
+    });
 }
 
 const limpiarTodo = () => {
@@ -251,7 +187,7 @@ const ModificarProducto = async (event) => {
             position: "center",
             icon: "info",
             title: "FORMULARIO INCOMPLETO",
-            text: "Debe de validar todos los campos",
+            text: "Debe completar todos los campos obligatorios",
             showConfirmButton: true,
         });
         BtnModificar.disabled = false;
@@ -259,7 +195,7 @@ const ModificarProducto = async (event) => {
     }
 
     const body = new FormData(FormProductos);
-    const url = '/carrito_avpc/productos/modificarAPI';
+    const url = '/app01_avpc/productos/modificarAPI';
     const config = {
         method: 'POST',
         body
@@ -268,7 +204,7 @@ const ModificarProducto = async (event) => {
     try {
         const respuesta = await fetch(url, config);
         const datos = await respuesta.json();
-        const { codigo, mensaje } = datos
+        const { codigo, mensaje } = datos;
 
         if (codigo == 1) {
             await Swal.fire({
@@ -296,8 +232,8 @@ const ModificarProducto = async (event) => {
     BtnModificar.disabled = false;
 }
 
-const EliminarProducto = async (e) => {
-    const idProducto = e.currentTarget.dataset.id
+const EliminarProducto = async (event) => {
+    const idProducto = event.currentTarget.dataset.id;
 
     const AlertaConfirmarEliminar = await Swal.fire({
         position: "center",
@@ -312,7 +248,7 @@ const EliminarProducto = async (e) => {
     });
 
     if (AlertaConfirmarEliminar.isConfirmed) {
-        const url = `/carrito_avpc/productos/eliminar?id=${idProducto}`;
+        const url = `/app01_avpc/productos/eliminar?id=${idProducto}`;
         const config = {
             method: 'GET'
         }
@@ -347,10 +283,87 @@ const EliminarProducto = async (e) => {
     }
 }
 
-CargarCategorias();
+const MostrarModalStock = (event) => {
+    const datos = event.currentTarget.dataset;
+    
+    document.getElementById('stock_producto_id').value = datos.id;
+    document.getElementById('producto_nombre_stock').value = datos.nombre;
+    document.getElementById('stock_actual').value = datos.stock;
+    document.getElementById('cantidad_agregar').value = '';
+
+    const modal = new bootstrap.Modal(document.getElementById('ModalAgregarStock'));
+    modal.show();
+}
+
+const AgregarStock = async () => {
+    const productoId = document.getElementById('stock_producto_id').value;
+    const cantidad = document.getElementById('cantidad_agregar').value;
+
+    if (!cantidad || cantidad <= 0) {
+        Swal.fire({
+            position: "center",
+            icon: "info",
+            title: "Cantidad Requerida",
+            text: "Debe ingresar una cantidad válida",
+            showConfirmButton: true,
+        });
+        return;
+    }
+
+    BtnConfirmarStock.disabled = true;
+
+    const body = new FormData();
+    body.append('producto_id', productoId);
+    body.append('cantidad', cantidad);
+
+    const url = '/app01_avpc/productos/agregarStockAPI';
+    const config = {
+        method: 'POST',
+        body
+    }
+
+    try {
+        const respuesta = await fetch(url, config);
+        const datos = await respuesta.json();
+        const { codigo, mensaje } = datos;
+
+        if (codigo == 1) {
+            await Swal.fire({
+                position: "center",
+                icon: "success",
+                title: "Éxito",
+                text: mensaje,
+                showConfirmButton: true,
+            });
+
+            // Cerrar modal
+            const modal = bootstrap.Modal.getInstance(document.getElementById('ModalAgregarStock'));
+            modal.hide();
+
+            BuscarProductos();
+        } else {
+            await Swal.fire({
+                position: "center",
+                icon: "error",
+                title: "Error",
+                text: mensaje,
+                showConfirmButton: true,
+            });
+        }
+    } catch (error) {
+        console.error('Error en AgregarStock:', error);
+    }
+    BtnConfirmarStock.disabled = false;
+}
+
+// Inicializar
 BuscarProductos();
-datatable.on('click', '.eliminar', EliminarProducto);
-datatable.on('click', '.modificar', llenarFormulario);
+
+// Event Listeners
 FormProductos.addEventListener('submit', GuardarProducto);
 BtnLimpiar.addEventListener('click', limpiarTodo);
 BtnModificar.addEventListener('click', ModificarProducto);
+BtnConfirmarStock.addEventListener('click', AgregarStock);
+datatable.on('click', '.eliminar', EliminarProducto);
+datatable.on('click', '.modificar', llenarFormulario);
+datatable.on('click', '.agregar-stock', MostrarModalStock);

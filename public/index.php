@@ -1,39 +1,40 @@
 <?php 
 require_once __DIR__ . '/../includes/app.php';
 
-use Controllers\ProductoController;
+use Controllers\VentaController;
 use Controllers\ClienteController;
-use Controllers\FacturaController;  
+use Controllers\ProductoVentasController;
 use MVC\Router;
 use Controllers\AppController;
 
 $router = new Router();
 $router->setBaseURL('/' . $_ENV['APP_NAME']);
 
+// RUTA PRINCIPAL
 $router->get('/', [AppController::class,'index']);
 
-//RUTAS PARA PRODUCTOS
-$router->get('/productos', [ProductoController::class, 'renderizarPagina']);
-$router->post('/productos/guardarAPI', [ProductoController::class, 'guardarAPI']);
-$router->get('/productos/buscarAPI', [ProductoController::class, 'buscarAPI']);
-$router->post('/productos/modificarAPI', [ProductoController::class, 'modificarAPI']);
-$router->get('/productos/eliminar', [ProductoController::class, 'EliminarAPI']);
-$router->get('/productos/categoriasAPI', [ProductoController::class, 'categoriasAPI']);
+// RUTAS DE VENTAS
+$router->get('/ventas', [VentaController::class, 'renderizarPagina']);
+$router->get('/ventas/clientesAPI', [VentaController::class, 'clientesAPI']);
+$router->get('/ventas/productosDisponiblesAPI', [VentaController::class, 'productosDisponiblesAPI']);
+$router->post('/ventas/guardarAPI', [VentaController::class, 'guardarAPI']);
+$router->get('/ventas/buscarAPI', [VentaController::class, 'buscarAPI']);
+$router->get('/ventas/detalleVentaAPI', [VentaController::class, 'detalleVentaAPI']);
+$router->get('/ventas/eliminar', [VentaController::class, 'eliminarAPI']);
 
-//RUTAS PARA CLIENTES
+// RUTAS DE CLIENTES
 $router->get('/clientes', [ClienteController::class, 'renderizarPagina']);
 $router->post('/clientes/guardarAPI', [ClienteController::class, 'guardarAPI']);
 $router->get('/clientes/buscarAPI', [ClienteController::class, 'buscarAPI']);
 $router->post('/clientes/modificarAPI', [ClienteController::class, 'modificarAPI']);
 $router->get('/clientes/eliminar', [ClienteController::class, 'eliminarAPI']);
 
-//RUTAS PARA FACTURAS (CARRITO) 
-$router->get('/facturas', [FacturaController::class, 'renderizarPagina']);
-$router->get('/facturas/productos-disponibles', [FacturaController::class, 'obtenerProductosDisponiblesAPI']);
-$router->get('/facturas/clientes', [FacturaController::class, 'obtenerClientesAPI']);
-$router->post('/facturas/procesar-venta', [FacturaController::class, 'procesarVentaAPI']);
-$router->get('/facturas/buscarAPI', [FacturaController::class, 'buscarFacturasAPI']);
-$router->get('/facturas/detalle', [FacturaController::class, 'obtenerFacturaCompletaAPI']);
-$router->get('/facturas/anular', [FacturaController::class, 'anularFacturaAPI']);
+// RUTAS DE PRODUCTOS
+$router->get('/productos', [ProductoVentasController::class, 'renderizarPagina']);
+$router->post('/productos/guardarAPI', [ProductoVentasController::class, 'guardarAPI']);
+$router->get('/productos/buscarAPI', [ProductoVentasController::class, 'buscarAPI']);
+$router->post('/productos/modificarAPI', [ProductoVentasController::class, 'modificarAPI']);
+$router->get('/productos/eliminar', [ProductoVentasController::class, 'eliminarAPI']);
+$router->post('/productos/agregarStockAPI', [ProductoVentasController::class, 'agregarStockAPI']);
 
 $router->comprobarRutas();
